@@ -1,0 +1,23 @@
+name: Build J313
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - apple-silicon
+
+jobs:
+  validate:
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@v4
+      - name: Show target
+        run: |
+          uname -m
+          echo "Target: Apple M1 / T8103 / J313"
+      - name: Validate bootstrap files
+        run: |
+          test -f Containerfile.apple
+          test -f docs/J313.md
+          test -f docs/ARCHITECTURE.md
