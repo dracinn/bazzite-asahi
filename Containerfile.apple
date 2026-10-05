@@ -1,10 +1,11 @@
 # Apple Silicon bootstrap image for Bazzite Asahi.
 #
-# ARM64-first path. Upstream Bazzite currently has x86_64/i686 kernel,
-# akmods, Mesa and gaming assumptions that do not apply to Apple Silicon.
+# Start from the existing Fedora Asahi Atomic image instead of rebuilding
+# the Asahi kernel/boot/userspace stack inside a generic Fedora Atomic image.
+# This keeps the device enablement aligned with Fedora Asahi Remix.
 
 ARG FEDORA_VERSION=44
-ARG BASE_IMAGE=quay.io/fedora-ostree-desktops/kinoite:${FEDORA_VERSION}
+ARG BASE_IMAGE=quay.io/fedora-asahi-remix-atomic-desktops/kinoite:${FEDORA_VERSION}
 
 FROM ${BASE_IMAGE}
 
@@ -14,32 +15,15 @@ LABEL org.opencontainers.image.vendor="Bazzite Asahi"
 
 COPY config/ /etc/bazzite-asahi/
 
-# Fedora carries the core Asahi userspace. The Asahi SIG supplies the
-# Apple-specific kernel/U-Boot/Mesa streams used by Fedora Asahi Remix.
-# Do not enable Bazzite's x86_64/i686 gaming repositories here.
-RUN dnf5 -y copr enable @asahi/kernel \
-    && dnf5 -y copr enable @asahi/u-boot \
-    && dnf5 -y copr enable @asahi/mesa \
-    && dnf5 -y copr enable @asahi/fedora-remix-scripts \
-    && dnf5 -y install \
-        asahi-platform-metapackage \
-        asahi-scripts \
-        asahi-battery \
-        asahi-fwupdate \
-        alsa-ucm-asahi \
-        dracut-asahi \
-        m1n1 \
-        update-m1n1 \
-        tiny-dfr \
-        uboot-images-armv8 \
-        kernel-16k \
-        kernel-16k-modules-extra \
-        asahi-audio \
-        speakersafetyd \
-        wireplumber \
-        pipewire \
-        mesa \
+# The base image already contains the Apple Silicon kernel, boot, firmware,
+# Mesa and platform integration. Only add ARM64-safe desktop/gaming building
+# blocks here; do not pull Bazzite's x86_64/i686 kernel or multilib stack.
+#
+# Keep this deliberately small until the first bootable image is proven.
+RUN dnf5 -y install \
+        gamemode \
+        zstd \
     && dnf5 clean all
 
-# Gaming support is deliberately not installed yet. Steam/Gamescope/Proton
-# will be added only after the ARM64 graphics and emulation stack is proven.
+# Steam/Gamescope/Proton/FEX will be added in a separate ARM64 compatibility
+# layer once the J313 boot and graphics baseline is validated.
