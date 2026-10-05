@@ -1,0 +1,37 @@
+# Apple Silicon enablement inherited from Fedora Asahi Remix.
+# Keep this layer aligned with the upstream Fedora Asahi image definitions.
+
+packages:
+  - alsa-ucm-asahi
+  - asahi-platform-metapackage
+  - asahi-repos
+  - fedora-asahi-remix-scripts
+  - tiny-dfr
+  - grub2-efi-aa64-modules
+  - uboot-images-armv8
+  - asahi-fwupdate
+  - dracut-asahi
+  - update-m1n1
+  - aajohan-comfortaa-fonts
+
+postprocess:
+  - |
+    #!/usr/bin/bash
+    set -xeuo pipefail
+
+    found=0
+    for efidir in /usr/lib/efi/grub2/*/EFI; do
+        [[ -f "\${efidir}/fedora/grubaa64.efi" ]] || continue
+        install -dm0755 "\${efidir}/BOOT"
+        cp -a "\${efidir}/fedora/grubaa64.efi" "\${efidir}/BOOT/grubaa64.efi"
+        found=1
+    done
+    [[ "\${found}" == 1 ]] || (echo "grubaa64.efi not found in /usr/lib/efi/grub2" && exit 1)
+
+repos:
+  - fedora-asahi-remix-hotfixes
+  - copr:copr.fedorainfracloud.org:group_asahi:fedora-remix-branding
+  - copr:copr.fedorainfracloud.org:group_asahi:fedora-remix-scripts
+  - copr:copr.fedorainfracloud.org:group_asahi:kernel
+  - copr:copr.fedorainfracloud.org:group_asahi:mesa
+  - copr:copr.fedorainfracloud.org:group_asahi:u-boot
