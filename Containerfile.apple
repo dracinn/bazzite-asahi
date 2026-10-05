@@ -1,8 +1,10 @@
-# Bootstrap Apple Silicon image.
-# Keep this minimal until ARM64 package availability is verified.
+# Apple Silicon bootstrap image for Bazzite Asahi.
+#
+# ARM64-first path. Upstream Bazzite currently has x86_64/i686 kernel,
+# akmods, Mesa and gaming assumptions that do not apply to Apple Silicon.
 
 ARG FEDORA_VERSION=44
-ARG BASE_IMAGE=quay.io/fedora-atomic-desktops/kinoite:${FEDORA_VERSION}
+ARG BASE_IMAGE=quay.io/fedora-ostree-desktops/kinoite:${FEDORA_VERSION}
 
 FROM ${BASE_IMAGE}
 
@@ -12,21 +14,26 @@ LABEL org.opencontainers.image.vendor="Bazzite Asahi"
 
 COPY config/ /etc/bazzite-asahi/
 
-# Package list is provisional and will be validated against the current
-# Fedora/Asahi ARM64 repositories before this becomes a release image.
-RUN dnf5 -y install \
-        m1n1 \
-        alsa-ucm-asahi \
+# Fedora carries the core Asahi userspace. The Asahi SIG supplies the
+# Apple-specific kernel/U-Boot/Mesa streams used by Fedora Asahi Remix.
+# Do not enable Bazzite's x86_64/i686 gaming repositories here.
+RUN dnf5 -y copr enable @asahi/kernel \
+    && dnf5 -y copr enable @asahi/u-boot \
+    && dnf5 -y copr enable @asahi/mesa \
+    && dnf5 -y copr enable @asahi/fedora-remix-scripts \
+    && dnf5 -y install \
         asahi-platform-metapackage \
-        asahi-repos \
-        fedora-asahi-remix-scripts \
+        asahi-scripts \
+        asahi-battery \
+        asahi-fwupdate \
+        alsa-ucm-asahi \
+        dracut-asahi \
+        m1n1 \
+        update-m1n1 \
         tiny-dfr \
         uboot-images-armv8 \
         kernel-16k \
         kernel-16k-modules-extra \
-        asahi-fwextract \
-        dracut-asahi \
-        update-m1n1 \
         asahi-audio \
         speakersafetyd \
         wireplumber \
@@ -34,4 +41,5 @@ RUN dnf5 -y install \
         mesa \
     && dnf5 clean all
 
-# Gaming packages will be added only after ARM64 availability is verified.
+# Gaming support is deliberately not installed yet. Steam/Gamescope/Proton
+# will be added only after the ARM64 graphics and emulation stack is proven.
