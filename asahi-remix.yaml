@@ -19,14 +19,25 @@ postprocess:
     #!/usr/bin/bash
     set -xeuo pipefail
 
-    found=0
-    for efidir in /usr/lib/efi/grub2/*/EFI; do
-        [[ -f "\${efidir}/fedora/grubaa64.efi" ]] || continue
-        install -dm0755 "\${efidir}/BOOT"
-        cp -a "\${efidir}/fedora/grubaa64.efi" "\${efidir}/BOOT/grubaa64.efi"
-        found=1
-    done
-    [[ "\${found}" == 1 ]] || (echo "grubaa64.efi not found in /usr/lib/efi/grub2" && exit 1)
+    # U-Boot boots EFI/BOOT/BOOTAA64.EFI. Fedora's GRUB normally lives under
+    # EFI/fedora, so mirror grubaa64.efi into EFI/BOOT for the Asahi path.
+    target_efi="$(find /usr/lib/efi/grub2 -type d -path '*/EFI' -print -quit)"
+    [[ -n "${target_efi}" ]] || { echo "GRUB EFI staging directory not found"; exit 1; }
+
+    source_grub=""
+    if [[ -f /boot/efi/EFI/fedora/grubaa64.efi ]]; then
+        source_grub=/boot/efi/EFI/fedora/grubaa64.efi
+    else
+        source_grub="$(find /usr/lib/efi/grub2 -type f -path '*/EFI/fedora/grubaa64.efi' -print -quit)"
+    fi
+
+    [[ -n "${source_grub}" && -f "${source_grub}" ]] || {
+        echo "grubaa64.efi not found in the composed EFI payload"
+        exit 1
+    }
+
+    install -dm0755 "${target_efi}/BOOT"
+    cp -a "${source_grub}" "${target_efi}/BOOT/grubaa64.efi"
 
 repos:
   - fedora-asahi-remix-hotfixes
