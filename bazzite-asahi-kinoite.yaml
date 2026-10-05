@@ -1,0 +1,13 @@
+metadata:
+  summary: "Bazzite Asahi Kinoite for Apple Silicon"
+
+variables:
+  distro: "bazzite-asahi"
+  variant: "bazzite-asahi-kinoite"
+
+include:
+  - kinoite-asahi-remix.yaml
+
+packages:
+  - gamemode
+  - zstd
