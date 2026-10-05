@@ -8,16 +8,32 @@ on:
       - apple-silicon
 
 jobs:
-  validate:
+  build-arm64:
     runs-on: ubuntu-24.04-arm
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v4
+
       - name: Show target
         run: |
           uname -m
           echo "Target: Apple M1 / T8103 / J313"
-      - name: Validate bootstrap files
+
+      - name: Set up Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Apple Silicon image
         run: |
-          test -f Containerfile.apple
-          test -f docs/J313.md
-          test -f docs/ARCHITECTURE.md
+          docker buildx build \
+            --platform linux/arm64 \
+            --file Containerfile.apple \
+            --tag bazzite-asahi:j313-ci \
+            --progress=plain \
+            --load \
+            .
+
+      - name: Inspect image architecture
+        run: |
+          docker image inspect bazzite-asahi:j313-ci \
+            --format 'Architecture={{.Architecture}} OS={{.Os}}'
