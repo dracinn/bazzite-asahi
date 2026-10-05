@@ -1,0 +1,71 @@
+name: Compose J313 bootable image
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - apple-silicon
+
+concurrency:
+  group: compose-j313-\${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  compose:
+    runs-on: ubuntu-24.04-arm
+    permissions:
+      contents: read
+      packages: write
+    container:
+      image: quay.io/fedora-ostree-desktops/buildroot:44
+      options: --security-opt=label=disable --privileged --user 0:0 --device=/dev/kvm --device=/dev/fuse --volume /:/run/host:rw
+    steps:
+      - name: Reclaim runner disk space
+        run: rm -rf /run/host/usr/local/lib/android
+
+      - name: Configure container storage
+        run: sed -i 's/driver = "overlay"/driver = "vfs"/' /usr/share/containers/storage.conf
+
+      - name: Checkout image definitions
+        uses: actions/checkout@v4
+
+      - name: Fetch Fedora Atomic Desktop manifests
+        run: |
+          git clone --no-checkout https://forge.fedoraproject.org/atomic-desktops/config.git fedora-atomic-desktops
+          git -C fedora-atomic-desktops checkout 3ce4dccd96570c6ebeefe50ca112734d917367d3
+
+      - name: Import Asahi repository keys
+        run: |
+          dnf copr enable -y @asahi/fedora-remix-branding
+          dnf install -y asahi-repos
+
+      - name: Update rpm-ostree tooling
+        run: dnf upgrade -y --enablerepo=updates-testing --refresh rpm-ostree
+
+      - name: Compose bootable OCI archive
+        run: |
+          set -euxo pipefail
+          mkdir -p cache
+          sed -i 's/  - kernel/  # - kernel/g' fedora-atomic-desktops/common.yaml
+          sed -i 's/  - grubby/  # - grubby/g' fedora-atomic-desktops/common.yaml
+          trap 'sed -i "s/  # - kernel/  - kernel/g" fedora-atomic-desktops/common.yaml; sed -i "s/  # - grubby/  - grubby/g" fedora-atomic-desktops/common.yaml' EXIT
+
+          rpm-ostree compose image \
+            --cachedir=cache \
+            --initialize \
+            --label=quay.expires-after=4w \
+            --max-layers=96 \
+            --force-nocache \
+            bazzite-asahi-kinoite.yaml \
+            bazzite-asahi-kinoite.ociarchive
+
+      - name: Inspect composed image
+        run: |
+          skopeo inspect oci-archive:bazzite-asahi-kinoite.ociarchive
+
+      - name: Upload bootable OCI artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: bazzite-asahi-j313-oci
+          path: bazzite-asahi-kinoite.ociarchive
+          if-no-files-found: error
