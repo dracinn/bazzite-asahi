@@ -1,6 +1,14 @@
-# Build configuration
+# Fedora Asahi configuration notes
 
-Apple Silicon-specific repository configuration lives here.
+Fedora 44 is the initial target because it is the current Fedora Asahi
+reference release and the Bazzite 44 build line.
 
-Temporary Fedora/Asahi repository URLs must not be hard-coded until verified
-against the Fedora release used by the image.
+Asahi package sources used by the image:
+- @asahi/kernel
+- @asahi/u-boot
+- @asahi/mesa
+- @asahi/fedora-remix-scripts
+
+Keep these as COPR enables in the build rather than committing generated
+repository files. This keeps repository metadata and signing-key handling
+with Fedora/COPR.
