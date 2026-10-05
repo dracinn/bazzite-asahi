@@ -8,4 +8,5 @@ variables:
 include:
   - fedora-atomic-desktops/kinoite-common.yaml
   - fedora-atomic-desktops/fedora.yaml
+  - repos.yaml
   - asahi-remix.yaml
