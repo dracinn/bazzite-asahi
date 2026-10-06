@@ -1,38 +1,75 @@
 # Roadmap
 
 ## Phase 1 — J313 bring-up
+
+### 1. Build and composition
 - [x] Verify Fedora 44 ARM64 Atomic/Kinoite base exists
 - [x] Verify Fedora carries core Asahi userspace packages
 - [x] Identify current Asahi kernel/U-Boot/Mesa build streams
 - [x] Build an ARM64 container layer from the Fedora Asahi Atomic image
 - [x] Add a reproducible rpm-ostree compose path for a bootable OCI archive
-- [ ] Publish the composed OCI image
-- [ ] Generate an Asahi-installer-compatible boot/root image package
-- [ ] Install the Asahi boot payload on J313
-- [ ] Boot and validate display, keyboard, trackpad, Wi-Fi, Bluetooth, audio, USB-C and NVMe
+- [ ] Fix the current Compose J313 failure
+- [ ] Produce and inspect a complete bootable OCI artifact
+- [ ] Publish a development OCI image for repeatable installation testing
 
-## Phase 2 — Bazzite userspace
+### 2. Asahi installation path
+- [ ] Validate the current Asahi Installer UEFI-only installation path
+- [ ] Confirm the image EFI/boot requirements against the current Asahi UEFI environment
+- [ ] Avoid maintaining a custom Asahi installer unless upstream integration requires it
+- [ ] Document the safe disk-preparation procedure for Apple Silicon
+- [ ] Add a reproducible installation/test procedure for J313
+
+### 3. First boot
+- [ ] Install the development image on a dedicated/test J313 installation
+- [ ] Boot successfully through the normal Asahi m1n1/U-Boot/UEFI chain
+- [ ] Validate internal display
+- [ ] Validate keyboard and SPI-HID trackpad
+- [ ] Validate keyboard backlight
+- [ ] Validate Wi-Fi and Bluetooth
+- [ ] Validate USB-C
+- [ ] Validate NVMe/storage
+- [ ] Validate speakers/headphone audio
+- [ ] Validate microphone and camera
+- [ ] Validate suspend/resume
+- [ ] Validate battery/charging
+- [ ] Validate thermal management
+- [ ] Validate reboot/shutdown and boot-picker behavior
+
+## Phase 2 — Atomic update and release infrastructure
+- [ ] Establish the image registry/publishing workflow
+- [ ] Establish signed image/update metadata
+- [ ] Verify atomic update and rollback behavior on J313
+- [ ] Define m1n1/firmware update handling separately from OS image updates
+- [ ] Add CI image metadata and bootability checks
+- [ ] Add installation smoke tests that do not modify a developer's primary disk
+
+## Phase 3 — Bazzite userspace
 - [ ] Add ARM64-compatible gaming packages
-- [ ] Establish Gamescope/Steam strategy for ARM64
+- [ ] Establish the ARM64 Steam strategy
+- [ ] Evaluate Gamescope support
 - [ ] Evaluate FEX/box64 and Proton compatibility
-- [ ] Add image publishing
 - [ ] Add Bazzite branding and first-boot configuration
+- [ ] Add gaming/QoL packages only after the base J313 image is proven stable
 
-## Phase 3 — Apple Silicon expansion
-- [ ] Additional M1/M2/M3/M4 Mac models
-- [ ] Device-specific validation matrix
-- [ ] Automated hardware smoke-test documentation
+## Phase 4 — Apple Silicon expansion
+- [ ] Add additional M1/M2 Mac models
+- [ ] Build a device-specific support matrix
+- [ ] Add automated hardware smoke-test documentation
+- [ ] Separate common Apple Silicon enablement from model-specific quirks
 
-## Design rule
-
-Do not fork or replace Asahi components unnecessarily. Prefer Fedora/Asahi
-packages and upstream support; use Aurora Silicon components only where they
-provide a concrete advantage or are needed for a specific device/kernel path.
+## Design rules
+- Do not fork or replace Asahi components unnecessarily.
+- Prefer Fedora/Asahi packages and upstream support.
+- Keep the Apple Silicon path ARM64-native; do not pull Bazzite's x86_64/i686 kernel, multilib, or akmods assumptions into this image.
+- Use Aurora Silicon components only where they provide a concrete, demonstrable advantage for a specific device or kernel path.
+- Keep bootloader/firmware lifecycle separate from normal Atomic OS updates.
+- Treat the Asahi Installer as the platform installation boundary rather than recreating Apple's disk/boot setup inside this project.
 
 ## Current implementation boundary
+The GitHub Actions compose job is the OS image-build layer. It must first produce a valid bootable OCI image.
 
-The GitHub Actions compose job produces a bootable OCI archive using the same
-rpm-ostree compose model used by Fedora Asahi Atomic Desktop images. This is
-the correct image-build layer, but it is not yet the final Asahi installer
-ZIP. The installer requires a boot payload plus separate EFI, boot and root
-partition images.
+The installation milestone is intentionally **not** a custom EFI/boot/root partition-image generator. Asahi's current distribution guidance recommends using its minimal UEFI environment and the normal UEFI boot path for workstation-class distributions. A custom forked installer/disk-image flow should only be introduced if this project later has a concrete requirement for it.
+
+The immediate blocker is therefore:
+
+**Compose successfully → inspect image → publish development image → boot it through the current Asahi UEFI environment on J313.**
