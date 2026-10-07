@@ -69,8 +69,12 @@ jobs:
         env:
           GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          echo "$GHCR_TOKEN" | skopeo login ghcr.io \
-            --username "${{ github.actor }}" --password-stdin
+          set -euxo pipefail
+          # Docker-style config.json: read by skopeo and cosign alike.
+          auth=$(printf '%s:%s' "${{ github.actor }}" "$GHCR_TOKEN" | base64 -w0)
+          mkdir -p "$HOME/.docker"
+          printf '{"auths":{"ghcr.io":{"auth":"%s"}}}\n' "$auth" \
+            > "$HOME/.docker/config.json"
 
       - name: Publish development image to GHCR
         env:
