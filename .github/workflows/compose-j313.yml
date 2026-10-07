@@ -32,7 +32,7 @@ jobs:
       - name: Fetch Fedora Atomic Desktop manifests
         run: |
           git clone --no-checkout https://forge.fedoraproject.org/atomic-desktops/config.git fedora-atomic-desktops
-          git -C fedora-atomic-desktops checkout 3ce4dccd96570c6ebeefe50ca112734d917367d3
+          git -C fedora-atomic-desktops checkout ddad2ebe2671d1d4a6fe325ed255e89cc776236c
 
       - name: Import Asahi repository keys
         run: |
