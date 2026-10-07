@@ -73,7 +73,7 @@ jobs:
 
       - name: Publish development image to GHCR
         env:
-          IMAGE: ghcr.io/${{ github.repository }}-kinoite
+          IMAGE: ghcr.io/${{ github.repository }}
         run: |
           set -euxo pipefail
           # Moving development tag plus an immutable per-commit tag.
