@@ -1,0 +1,27 @@
+name: GHCR push probe
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  probe:
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - name: Push scratch image with source label
+        run: |
+          set -euxo pipefail
+          mkdir probe && cd probe
+          echo hi > hello.txt
+          cat > Dockerfile <<'EOF'
+          FROM scratch
+          COPY hello.txt /
+          LABEL org.opencontainers.image.source="https://github.com/dracinn/bazzite-asahi"
+          EOF
+          docker build -t ghcr.io/dracinn/bazzite-asahi-probe:test .
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io \
+            -u "${{ github.actor }}" --password-stdin
+          docker push ghcr.io/dracinn/bazzite-asahi-probe:test
