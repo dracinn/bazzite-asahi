@@ -11,3 +11,7 @@ include:
 packages:
   - gamemode
   - zstd
+  # Phone tethering uplink: usbmuxd/libimobiledevice enable iPhone USB
+  # tethering (ipheth); Android RNDIS tethering needs no extra packages.
+  - usbmuxd
+  - libimobiledevice-utils

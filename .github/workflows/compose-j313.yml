@@ -16,6 +16,7 @@ jobs:
     permissions:
       contents: read
       packages: write
+      id-token: write
     container:
       image: quay.io/fedora-ostree-desktops/buildroot:44
       options: --security-opt=label=disable --privileged --user 0:0 --device=/dev/kvm --device=/dev/fuse --volume /:/run/host:rw
@@ -82,6 +83,32 @@ jobs:
               oci-archive:bazzite-asahi-kinoite.ociarchive \
               "docker://${IMAGE}:${tag}"
           done
+
+      - name: Install cosign
+        run: dnf install -y cosign
+
+      - name: Sign image (keyless)
+        env:
+          IMAGE: ghcr.io/${{ github.repository }}
+        run: |
+          set -euxo pipefail
+          digest=$(skopeo inspect oci-archive:bazzite-asahi-kinoite.ociarchive \
+            --format '{{.Digest}}')
+          cosign sign --yes "${IMAGE}@${digest}"
+
+      - name: Verify signature
+        env:
+          IMAGE: ghcr.io/${{ github.repository }}
+        run: |
+          set -euxo pipefail
+          digest=$(skopeo inspect oci-archive:bazzite-asahi-kinoite.ociarchive \
+            --format '{{.Digest}}')
+          cosign verify \
+            --certificate-identity-regexp \
+              "https://github.com/${{ github.repository }}/" \
+            --certificate-oidc-issuer \
+              "https://token.actions.githubusercontent.com" \
+            "${IMAGE}@${digest}"
 
       - name: Upload bootable OCI artifact
         uses: actions/upload-artifact@v4

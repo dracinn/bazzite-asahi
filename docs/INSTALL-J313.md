@@ -7,9 +7,44 @@ ghcr.io/dracinn/bazzite-asahi:j313        # moving dev tag
 ghcr.io/dracinn/bazzite-asahi:j313-<sha>  # immutable per-commit tag
 ```
 
-It is an rpm-ostree compose image (ostree-native container), unsigned, public.
+It is an rpm-ostree compose image (ostree-native container), keyless-signed
+with cosign from the GitHub Actions identity. Verify a tag before install:
+
+```
+cosign verify \
+  --certificate-identity-regexp "https://github.com/dracinn/bazzite-asahi/" \
+  --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
+  ghcr.io/dracinn/bazzite-asahi:j313
+```
+
+Signing currently provides provenance; install-time signature enforcement
+(`ostree-image-signed:` plus a sigstore policy) is a later roadmap item.
+
 Do not install on a machine whose macOS/APFS installation you need to keep —
 see "Test policy" in J313.md.
+
+## Connectivity without home broadband
+
+The install path here assumes the uplink is a phone — Tetrd has no Linux
+ARM64 client, so it cannot provide connectivity once booted into Linux.
+Working alternatives:
+
+- **Phone Wi-Fi hotspot** — simplest if the carrier allows it; J313 Wi-Fi
+  works under the Asahi kernel once firmware is loaded.
+- **Android USB tethering** — works out of the box: the kernel's RNDIS/NCM
+  drivers expose `usb0` and NetworkManager runs DHCP on it.
+- **iPhone USB tethering** — needs `ipheth` plus `usbmuxd` and a pairing
+  step (`idevicepair pair` from `libimobiledevice-utils`); both packages
+  are in the image. Trust must be accepted on the phone.
+- **Fully offline** — no connectivity at install time: on macOS, download
+  the `bazzite-asahi-j313-oci` Actions artifact (or `skopeo copy` the ghcr
+  tag to an oci-archive) onto a USB stick formatted exFAT, then on the
+  Linux side rebase from the local file instead of the registry:
+
+  ```
+  sudo rpm-ostree rebase \
+    ostree-unverified-image:oci-archive:/path/to/bazzite-asahi-kinoite.ociarchive
+  ```
 
 ## Path A — rebase from Fedora Asahi Remix Atomic (recommended)
 
@@ -80,6 +115,6 @@ Asahi-side boot artifacts.
 
 ## After install
 
-Work through the validation matrix in J313.md — display, keyboard, SPI-HID
-trackpad, Wi-Fi, suspend, and the Atomic lifecycle items (update, rollback,
-failed-deployment recovery).
+Run the validation script (`scripts/validate-j313.sh` in this repo — copy it
+onto the same USB stick if the machine is offline). It reports PASS/FAIL/
+MANUAL/SKIP for every item in the J313.md matrix and is read-only.
