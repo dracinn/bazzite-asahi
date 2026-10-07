@@ -2,6 +2,11 @@ name: GHCR push probe
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - apple-silicon
+    paths:
+      - .github/workflows/ghcr-probe.yml
 
 permissions:
   contents: read
