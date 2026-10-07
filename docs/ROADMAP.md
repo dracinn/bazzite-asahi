@@ -8,16 +8,16 @@
 - [x] Identify current Asahi kernel/U-Boot/Mesa build streams
 - [x] Build an ARM64 container layer from the Fedora Asahi Atomic image
 - [x] Add a reproducible rpm-ostree compose path for a bootable OCI archive
-- [ ] Fix the current Compose J313 failure
-- [ ] Produce and inspect a complete bootable OCI artifact
-- [ ] Publish a development OCI image for repeatable installation testing
+- [x] Fix the current Compose J313 failure
+- [x] Produce and inspect a complete bootable OCI artifact
+- [x] Publish a development OCI image for repeatable installation testing
 
 ### 2. Asahi installation path
 - [ ] Validate the current Asahi Installer UEFI-only installation path
 - [ ] Confirm the image EFI/boot requirements against the current Asahi UEFI environment
 - [ ] Avoid maintaining a custom Asahi installer unless upstream integration requires it
-- [ ] Document the safe disk-preparation procedure for Apple Silicon
-- [ ] Add a reproducible installation/test procedure for J313
+- [x] Document the safe disk-preparation procedure for Apple Silicon
+- [x] Add a reproducible installation/test procedure for J313
 
 ### 3. First boot
 - [ ] Install the development image on a dedicated/test J313 installation
@@ -70,6 +70,6 @@ The GitHub Actions compose job is the OS image-build layer. It must first produc
 
 The installation milestone is intentionally **not** a custom EFI/boot/root partition-image generator. Asahi's current distribution guidance recommends using its minimal UEFI environment and the normal UEFI boot path for workstation-class distributions. A custom forked installer/disk-image flow should only be introduced if this project later has a concrete requirement for it.
 
-The immediate blocker is therefore:
+Compose, inspection and registry publishing are done. The immediate blocker is now:
 
-**Compose successfully → inspect image → publish development image → boot it through the current Asahi UEFI environment on J313.**
+**Install the published development image on J313 via docs/INSTALL-J313.md and boot it through the current Asahi UEFI environment.**
