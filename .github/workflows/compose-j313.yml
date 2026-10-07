@@ -63,6 +63,25 @@ jobs:
         run: |
           skopeo inspect oci-archive:bazzite-asahi-kinoite.ociarchive
 
+      - name: Log in to GHCR
+        env:
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "$GHCR_TOKEN" | skopeo login ghcr.io \
+            --username "${{ github.actor }}" --password-stdin
+
+      - name: Publish development image to GHCR
+        env:
+          IMAGE: ghcr.io/${{ github.repository }}
+        run: |
+          set -euxo pipefail
+          # Moving development tag plus an immutable per-commit tag.
+          for tag in j313 "j313-${GITHUB_SHA::7}"; do
+            skopeo copy --retry-times 3 \
+              oci-archive:bazzite-asahi-kinoite.ociarchive \
+              "docker://${IMAGE}:${tag}"
+          done
+
       - name: Upload bootable OCI artifact
         uses: actions/upload-artifact@v4
         with:
