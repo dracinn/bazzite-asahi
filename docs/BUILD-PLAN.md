@@ -66,14 +66,23 @@ issue tracker. Supersedes the phase layout in `ROADMAP.md` where they differ.
       document that image updates do NOT update m1n1/U-Boot, and test
       rollback behavior after a failed boot.
 
-## Phase 3 — Bootsahi / proper installer (parallel, no hardware needed to start)
+## Phase 3 — installer payload (in progress)
 
-- [ ] Read Bootsahi `docs/DESIGN.md` + `install-config.schema.json`; run
-      their `make-payload.sh` against our ociarchive locally (qemu+U-Boot
-      harness is their opt-in `test-bootstrap-boot.sh`).
-- [ ] Contribute our image ref to their catalog once it can pass the
-      36-check golden manifest — this also helps unblock their alpha
-      (they're hardware-starved, issue #154/#160).
+- [x] Evaluated Bootsahi (`tuna-os/bootc-installer-asahi`): their model is a
+      bootstrap payload + first-boot `bootc install` of a registry ref —
+      elegant, but requires internet *inside Linux* at first boot, which
+      this project can't assume (Tetrd has no aarch64 client).
+- [x] Adapted their `make-payload.sh` into `scripts/make-installer-payload.sh`
+      with a **direct-install** layout matching the official Fedora Asahi
+      os_list schema (EFI + Boot + Root/expand): the installer writes the
+      real OS, first boot lands in Bazzite Asahi, zero Linux-side downloads.
+- [ ] Verify payload builds in CI (`payload` job in build-j313.yml).
+- [ ] Hardware-test the payload install on J313.
+- [ ] If proven, cut a release hosting the zip + installer_data.json so the
+      catalog URL is stable.
+- [ ] Optional: contribute our ref to Bootsahi's catalog for users who DO
+      have Linux-side internet (their alpha is hardware-starved —
+      issue #154/#160).
 - [ ] Adopt `asahi-bootbin-sync` (or equivalent) so boot bins sync from
       image → ESP on update — closes the "update renders unbootable" gap.
 

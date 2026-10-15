@@ -83,3 +83,30 @@ jobs:
           name: bazzite-asahi-j313-oci
           path: bazzite-asahi-j313.ociarchive
           if-no-files-found: error
+
+  payload:
+    needs: build
+    runs-on: ubuntu-24.04-arm
+    permissions:
+      contents: read
+      packages: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Asahi installer payload
+        run: |
+          command -v podman >/dev/null || { sudo apt-get update -qq && sudo apt-get install -y podman; }
+          sudo OUT_DIR=out \
+            INSTALLER_TITLE="Bazzite Asahi — MacBook Air M1 (J313)" \
+            INSTALLER_OS_NAME="Bazzite Asahi" \
+            PACKAGE_URL="https://github.com/dracinn/bazzite-asahi/releases/latest/download/bazzite-asahi-j313.zip" \
+            ./scripts/make-installer-payload.sh "$IMAGE:j313" bazzite-asahi-j313
+
+      - name: Upload installer payload
+        uses: actions/upload-artifact@v4
+        with:
+          name: bazzite-asahi-j313-installer
+          path: |
+            out/bazzite-asahi-j313.zip
+            out/installer_data.json
+          if-no-files-found: error

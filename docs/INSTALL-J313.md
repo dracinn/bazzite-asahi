@@ -36,13 +36,47 @@ Working alternatives:
 - **iPhone USB tethering** — needs `ipheth` plus `usbmuxd` and a pairing
   step (`idevicepair pair` from `libimobiledevice-utils`); both packages
   are in the image. Trust must be accepted on the phone.
-- **Fully offline** — no connectivity at install time: on macOS, download
-  the `bazzite-asahi-j313-oci` Actions artifact (or `skopeo copy` the ghcr
-  tag to an oci-archive) onto a USB stick formatted exFAT, then install
-  from the local archive with `podman pull oci-archive:` as shown in
-  Path A — no registry access is needed at any point.
+- **Fully offline** — two options, both macOS-side downloads only:
+  Path A with a local `bazzite-asahi-j313.zip` placed in the installer's
+  `os/` directory (recommended), or the `bazzite-asahi-j313-oci` Actions
+  artifact on a USB stick used with Path B's `podman pull oci-archive:`.
 
-## Path A — convert a Fedora Asahi Remix install with bootc (recommended)
+## Path A — direct install via the Asahi installer (recommended)
+
+CI packages the built image as an asahi-installer payload — an OS entry
+just like "Fedora Asahi Remix" in the official catalog — so the whole
+install happens through the normal Asahi flow on macOS. All downloads run
+on macOS (works with Tetrd); the installed system needs no network.
+
+The artifacts are per build:
+
+- `bazzite-asahi-j313-installer` (Actions artifact) or release assets:
+  `bazzite-asahi-j313.zip` (esp/ + boot.img + root.img) and
+  `installer_data.json`.
+
+1. On the J313 under macOS, fetch the official installer package and our
+   catalog:
+
+   ```
+   curl -LO https://github.com/AsahiLinux/asahi-installer/releases/latest/download/installer.tar.gz
+   tar xf installer.tar.gz && cd installer
+   curl -LO https://github.com/dracinn/bazzite-asahi/releases/latest/download/installer_data.json
+   ```
+
+   For a fully offline install, also download `bazzite-asahi-j313.zip` and
+   place it in the installer's `os/` directory — the catalog's `package`
+   URL resolves to `os/<file>` when it is not an http(s) URL.
+
+2. Run the installer (`sudo ./install.sh`) and pick **Bazzite Asahi** —
+   it is marked `expert`, so it only appears when the installer is run in
+   expert mode (`EXPERT=1 sudo -E ./install.sh`). The installer resizes
+   APFS, writes the stub + ESP + partitions, and copies the payload in.
+
+3. Reboot, hold the power button for the boot picker, select the new OS
+   entry and complete the one-time `bputil` blessing in recoveryOS as the
+   Asahi flow instructs. First boot lands directly in Bazzite Asahi.
+
+## Path B — convert a Fedora Asahi Remix install with bootc (fallback)
 
 The Asahi Installer does not offer an ostree/Atomic variant, so there is no
 Atomic base to rebase from. Instead, install the normal Fedora Asahi Remix
@@ -93,9 +127,9 @@ and deploys the image while preserving the rest of the system under
 
 5. Reboot into the Bazzite Asahi deployment. If it fails to boot, the
    previous boot chain is gone with `/boot` — recovery means reinstalling
-   via Path B or the Asahi installer, so only proceed once you accept that.
+   via Path C or the Asahi installer, so only proceed once you accept that.
 
-## Path B — manual install via UEFI environment and bootc
+## Path C — manual install via UEFI environment and bootc
 
 Use this to validate the bare UEFI path or when no Fedora Asahi install exists.
 
