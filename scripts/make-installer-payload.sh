@@ -94,7 +94,7 @@ if [ ! -f "$WORK/esp/m1n1/boot.bin" ]; then
         echo "ERROR: image lacks m1n1/u-boot/DTBs — not an asahi-capable image?" >&2
         exit 1
     }
-    { cat "$M1N1_BIN"; cat $DTBS; gzip -c "$UBOOT_BIN"; } > "$WORK/esp/m1n1/boot.bin"
+    { cat "$M1N1_BIN"; cat $DTBS; gzip -cn "$UBOOT_BIN"; } > "$WORK/esp/m1n1/boot.bin"
     podman umount "$CTR" >/dev/null
     podman rm -f "$CTR" >/dev/null
 fi
