@@ -54,23 +54,32 @@ The artifacts are per build:
   `bazzite-asahi-j313.zip` (esp/ + boot.img + root.img) and
   `installer_data.json`.
 
-1. On the J313 under macOS, fetch the official installer package and our
-   catalog:
+1. On the J313 under macOS, fetch the official installer package the same
+   way `alx.sh` does, then overlay our catalog + payload:
 
    ```
-   curl -LO https://github.com/AsahiLinux/asahi-installer/releases/latest/download/installer.tar.gz
-   tar xf installer.tar.gz && cd installer
-   curl -LO https://github.com/dracinn/bazzite-asahi/releases/latest/download/installer_data.json
+   PKG_VER=$(curl -sL https://cdn.asahilinux.org/installer/latest)
+   curl -LO "https://cdn.asahilinux.org/installer/installer-$PKG_VER.tar.gz"
+   mkdir -p ~/bazzite-asahi-install && cd ~/bazzite-asahi-install
+   tar xf ~/Downloads/installer-$PKG_VER.tar.gz
+   # from the bazzite-asahi-j313-installer Actions artifact:
+   cp /path/to/installer_data.json .
+   mkdir -p os && cp /path/to/bazzite-asahi-j313.zip os/
    ```
 
-   For a fully offline install, also download `bazzite-asahi-j313.zip` and
-   place it in the installer's `os/` directory — the catalog's `package`
-   URL resolves to `os/<file>` when it is not an http(s) URL.
+   The catalog's `package` field is a relative path, which the installer
+   resolves to `os/bazzite-asahi-j313.zip` — no payload download happens
+   during install (fully offline-capable).
 
-2. Run the installer (`sudo ./install.sh`) and pick **Bazzite Asahi** —
-   it is marked `expert`, so it only appears when the installer is run in
-   expert mode (`EXPERT=1 sudo -E ./install.sh`). The installer resizes
-   APFS, writes the stub + ESP + partitions, and copies the payload in.
+2. Run it in expert mode and pick **Bazzite Asahi**:
+
+   ```
+   caffeinate -dis sudo -E env EXPERT=1 ./install.sh
+   ```
+
+   (The entry is marked `expert`, so it only appears with `EXPERT=1`.)
+   The installer resizes APFS, writes the stub + ESP + partitions, and
+   copies the payload in — all from local files.
 
 3. Reboot, hold the power button for the boot picker, select the new OS
    entry and complete the one-time `bputil` blessing in recoveryOS as the

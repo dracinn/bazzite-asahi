@@ -99,7 +99,7 @@ jobs:
           sudo OUT_DIR=out \
             INSTALLER_TITLE="Bazzite Asahi — MacBook Air M1 (J313)" \
             INSTALLER_OS_NAME="Bazzite Asahi" \
-            PACKAGE_URL="https://github.com/dracinn/bazzite-asahi/releases/latest/download/bazzite-asahi-j313.zip" \
+            PACKAGE_URL="bazzite-asahi-j313.zip" \
             ./scripts/make-installer-payload.sh "$IMAGE:j313" bazzite-asahi-j313
 
       - name: Upload installer payload
