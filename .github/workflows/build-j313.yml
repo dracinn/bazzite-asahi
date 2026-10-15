@@ -1,0 +1,81 @@
+name: Build J313 image
+
+# Layers the Bazzite Asahi package set on the Fedora Asahi Remix Atomic
+# (kinoite) image, publishes to GHCR, keyless-signs with cosign, and
+# uploads an OCI archive for offline install media.
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: build-j313-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  IMAGE: ghcr.io/dracinn/bazzite-asahi
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04-arm
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+      attestations: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build image
+        run: |
+          docker buildx build \
+            --platform linux/arm64 \
+            --file Containerfile \
+            --tag "$IMAGE:j313" \
+            --tag "$IMAGE:j313-${{ github.sha }}" \
+            --load \
+            .
+
+      - name: Verify required packages and no generic kernel
+        run: |
+          docker run --rm --platform linux/arm64 "$IMAGE:j313" bash -c '
+            set -e
+            rpm -q kernel-16k m1n1 uboot-images-armv8 podman bootc \
+                 gamemode usbmuxd speakersafetyd
+            if rpm -q kernel; then
+              echo "FAIL: generic Fedora kernel must not be present"
+              exit 1
+            fi
+          '
+
+      - name: Log in to GHCR
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+
+      - name: Push image
+        run: docker push "$IMAGE:j313" && docker push "$IMAGE:j313-${{ github.sha }}"
+
+      - uses: sigstore/cosign-installer@v4
+        with:
+          cosign-release: v2.5.3
+
+      - name: Resolve pushed digest
+        run: echo "DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' "$IMAGE:j313" | cut -d@ -f2)" >> "$GITHUB_ENV"
+
+      - name: Sign image digest
+        run: cosign sign --yes "$IMAGE@$DIGEST"
+
+      - name: Export OCI archive for offline media
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y skopeo
+          skopeo copy --authfile ~/.docker/config.json \
+            "docker://$IMAGE:j313" \
+            "oci-archive:bazzite-asahi-j313.ociarchive:j313"
+
+      - name: Upload OCI archive artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: bazzite-asahi-j313-oci
+          path: bazzite-asahi-j313.ociarchive
+          if-no-files-found: error

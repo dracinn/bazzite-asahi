@@ -32,23 +32,21 @@ issue tracker. Supersedes the phase layout in `ROADMAP.md` where they differ.
    bonito/grouper pass today. Its alpha is blocked on hardware testing —
    something we can actually help with.
 
-## Phase 1 — realign the image (this week, no hardware)
+## Phase 1 — realign the image (done 2026-10-15)
 
-- [ ] **Diff our manifests against `fedora-asahi-remix-atomic-desktops/images`**:
-      `base-atomic-asahi-remix.yaml` + `kinoite-asahi-remix.yaml` vs ours.
-      Our local manifests were seeded from the same sources; align to their
-      layout (including `silverblue` if we want a GNOME option) so we can
-      track upstream instead of maintaining a private fork.
-- [ ] **Decide base strategy**: (a) keep composing our own tree, or
-      (b) switch to layering Bazzite packages onto the published
-      `fedora-asahi-remix-atomic-desktops/kinoite` image — same pattern as
-      x86 Bazzite. (b) removes our dracut/manifest-pin churn class of
-      failures entirely; (a) keeps full control. Default to (b) unless the
-      diff shows their image lacks something we need.
-- [ ] **Verify `speakersafetyd` + `asahi-nvram` in the image** — speaker
-      damage is permanent on J313; gate any hardware install on this.
-- [ ] Re-pin check: keep the watch's manifest-drift alert working against
-      whatever base we land on.
+- [x] **Diffed vs `fedora-asahi-remix-atomic-desktops/images`**: same
+      manifest layout — and their `asahi-remix.yaml` carries a postprocess
+      ours lacked (copies `grubaa64.efi` into `EFI/BOOT/` so shim finds it;
+      without it a bootc-installed system may not boot).
+- [x] **Decision: layer on the upstream image.** They publish signed,
+      daily kinoite/silverblue images for Fedora 43/44 — our compose was
+      building rawhide. The Containerfile now does `FROM
+      quay.io/fedora-asahi-remix-atomic-desktops/kinoite:44` +
+      `dnf install` of our package set; compose manifests/workflow removed.
+- [x] **`speakersafetyd` installed explicitly** in the layer (hardware-safety
+      gate for J313, even if the metapackage already pulls it).
+- [ ] Re-pin check: the watch's manifest-drift check no longer applies —
+      replace with a "new upstream kinoite tag" check or drop it.
 
 ## Phase 2 — install path (hardware)
 
@@ -97,9 +95,7 @@ issue tracker. Supersedes the phase layout in `ROADMAP.md` where they differ.
 
 ## Open questions
 
-- Does `fedora-asahi-remix-atomic-desktops/kinoite` include
-  `speakersafetyd`? (Gate for Phase 2.)
-- Is their `base-atomic-asahi-remix.yaml` the right include point, or do
-  we still need our own compose for bazzite-specific packages
-  (gamemode, usbmuxd)?
 - Bootsahi catalog accepts third-party refs? (Read their schema/CI gate.)
+- Does the upstream kinoite:44 image include everything the old compose
+  pulled (e.g. `asahi-platform-metapackage` chain)? CI's package-verify
+  step asserts the essentials.

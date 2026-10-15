@@ -10,9 +10,11 @@
 The upstream Bazzite build contains x86-specific package, kernel, multilib and akmods assumptions. Apple Silicon therefore uses a separate ARM64 image path.
 
 ## Build model
-The image is composed with rpm-ostree compose image, following the Fedora Asahi Atomic Desktop build model. The compose path is the only build path; it produces the published image.
+The image is a bootc container image layered on the Fedora Asahi Remix Atomic kinoite base (`quay.io/fedora-asahi-remix-atomic-desktops/kinoite:44`, built daily by the Fedora Asahi SIG). The upstream image carries the Asahi kernel/firmware/boot stack and the EFI/BOOT grubaa64.efi postprocess needed for bootc-installed systems to boot via shim. Our Containerfile only adds ARM64-safe packages.
 
-The compose must not assume an EFI System Partition or staged bootloader files exist during composition. EFI/bootloader installation belongs to the deployment environment (Asahi UEFI install path). Do not add hard-coded ESP mounts or staged grubaa64.efi paths to compose postprocess.
+This replaces the earlier self-composed rpm-ostree manifest approach: layering removes manifest-pin drift and rawhide churn, and keeps us on a stable Fedora release alongside upstream.
+
+EFI/bootloader installation still belongs to the deployment environment (Asahi UEFI install path); the image must not assume an ESP exists at build time.
 
 The desired output is a bootable OCI image that can be consumed by the appropriate Fedora/Asahi Atomic installation workflow.
 

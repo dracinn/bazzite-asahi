@@ -7,7 +7,7 @@ ghcr.io/dracinn/bazzite-asahi:j313        # moving dev tag
 ghcr.io/dracinn/bazzite-asahi:j313-<sha>  # immutable per-commit tag
 ```
 
-It is an rpm-ostree compose image (ostree-native container), keyless-signed
+It is an ostree-native bootc container image layered on the Fedora Asahi Remix Atomic kinoite base, keyless-signed
 with cosign from the GitHub Actions identity. Verify a tag before install:
 
 ```

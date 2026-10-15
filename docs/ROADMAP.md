@@ -7,7 +7,7 @@
 - [x] Verify Fedora carries core Asahi userspace packages
 - [x] Identify current Asahi kernel/U-Boot/Mesa build streams
 - [x] Build an ARM64 container layer from the Fedora Asahi Atomic image
-- [x] Add a reproducible rpm-ostree compose path for a bootable OCI archive
+- [x] Add a reproducible rpm-ostree compose path for a bootable OCI archive (superseded: image is now layered on the upstream Fedora Asahi Atomic kinoite base)
 - [x] Fix the current Compose J313 failure
 - [x] Produce and inspect a complete bootable OCI artifact
 - [x] Publish a development OCI image for repeatable installation testing
@@ -66,7 +66,7 @@
 - Treat the Asahi Installer as the platform installation boundary rather than recreating Apple's disk/boot setup inside this project.
 
 ## Current implementation boundary
-The GitHub Actions compose job is the OS image-build layer. It must first produce a valid bootable OCI image.
+The GitHub Actions build job is the OS image-build layer: it layers Bazzite packages on the Fedora Asahi Remix Atomic kinoite image and publishes a signed OCI image plus an OCI archive artifact.
 
 The installation milestone is intentionally **not** a custom EFI/boot/root partition-image generator. Asahi's current distribution guidance recommends using its minimal UEFI environment and the normal UEFI boot path for workstation-class distributions. A custom forked installer/disk-image flow should only be introduced if this project later has a concrete requirement for it.
 
