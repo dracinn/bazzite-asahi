@@ -1,0 +1,17 @@
+metadata:
+  summary: "Bazzite Asahi Kinoite for Apple Silicon"
+
+variables:
+  distro: "bazzite-asahi"
+  variant: "bazzite-asahi-kinoite"
+
+include:
+  - kinoite-asahi-remix.yaml
+
+packages:
+  - gamemode
+  - zstd
+  # Phone tethering uplink: usbmuxd/libimobiledevice enable iPhone USB
+  # tethering (ipheth); Android RNDIS tethering needs no extra packages.
+  - usbmuxd
+  - libimobiledevice-utils

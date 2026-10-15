@@ -1,0 +1,12 @@
+metadata:
+  summary: "Fedora Asahi Remix Kinoite base for Bazzite Asahi"
+
+variables:
+  distro: "bazzite-asahi"
+  variant: "bazzite-asahi-kinoite"
+
+include:
+  - fedora-atomic-desktops/kinoite-common.yaml
+  - fedora-atomic-desktops/fedora.yaml
+  - repos.yaml
+  - asahi-remix.yaml
