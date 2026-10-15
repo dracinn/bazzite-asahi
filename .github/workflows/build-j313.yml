@@ -9,6 +9,10 @@ on:
   push:
     branches:
       - main
+  # Daily rebuild tracks the upstream Fedora Asahi Atomic base image,
+  # which is republished daily — the layered equivalent of re-pinning.
+  schedule:
+    - cron: '23 6 * * *'
 
 concurrency:
   group: build-j313-${{ github.ref }}
