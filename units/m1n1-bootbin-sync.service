@@ -1,9 +1,8 @@
 [Unit]
 Description=Sync m1n1/boot.bin on the ESP from the current deployment
-# Runs once per boot; writes only when the regenerated bundle differs.
-ConditionPathExists=/boot/efi/m1n1/boot.bin
-RequiresMountsFor=/boot/efi
-After=boot-efi.mount
+# The script locates and mounts the ESP itself (bootc writes no fstab);
+# it self-gates and exits quietly on non-Asahi systems.
+After=local-fs.target
 
 [Service]
 Type=oneshot

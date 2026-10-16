@@ -5,11 +5,34 @@
 # at install time drifts away from the m1n1/U-Boot/DTBs the current image
 # expects. This regenerates it at every boot (same recipe as update-m1n1)
 # and writes only when the bytes differ.
+#
+# bootc installs write no fstab — the ESP is normally unmounted. We find
+# it via the PARTUUID m1n1 stage1 publishes in the device tree
+# (/chosen/asahi,efi-system-partition) and mount it ourselves.
 set -euo pipefail
 
 ESP=/boot/efi
+
+if [ ! -f "$ESP/m1n1/boot.bin" ]; then
+    PARTUUID=$(tr -d '\0' </proc/device-tree/chosen/asahi,efi-system-partition 2>/dev/null || true)
+    ESPDEV="/dev/disk/by-partuuid/${PARTUUID:-none}"
+    if [ -b "$ESPDEV" ]; then
+        if mountpoint -q "$ESP" || [ ! -e "$ESP" ]; then
+            mkdir -p /run/m1n1-esp
+            mount "$ESPDEV" /run/m1n1-esp && ESP=/run/m1n1-esp
+        else
+            mount "$ESPDEV" "$ESP" 2>/dev/null || {
+                mkdir -p /run/m1n1-esp
+                mount "$ESPDEV" /run/m1n1-esp && ESP=/run/m1n1-esp; }
+        fi
+    fi
+fi
+
 TARGET="$ESP/m1n1/boot.bin"
-[ -d "$ESP/m1n1" ] || exit 0   # not an Asahi-ESP system
+if [ ! -f "$TARGET" ]; then
+    echo "m1n1-bootbin-sync: no Asahi ESP found ($TARGET missing)" >&2
+    exit 0
+fi
 
 M1N1_BIN=""
 for c in /usr/lib64/m1n1/m1n1.bin /usr/lib/m1n1/m1n1.bin /usr/lib/asahi-boot/m1n1.bin; do
