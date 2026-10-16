@@ -9,6 +9,10 @@ on:
   push:
     branches:
       - main
+    # Docs/script-only changes don't change the image.
+    paths-ignore:
+      - 'docs/**'
+      - 'README.md'
   # Daily rebuild tracks the upstream Fedora Asahi Atomic base image,
   # which is republished daily — the layered equivalent of re-pinning.
   schedule:
