@@ -15,9 +15,10 @@ LABEL org.opencontainers.image.title="Bazzite Asahi" \
       org.opencontainers.image.vendor="Bazzite Asahi"
 
 # speakersafetyd is hardware-safety-critical on J313 (unprotected speakers
-# can be damaged); install explicitly even though the platform metapackage
-# should already pull it in. usbmuxd/libimobiledevice enable iPhone USB
-# tethering (ipheth); Android RNDIS tethering needs no extra packages.
+# can be damaged); install AND enable it — the base image ships it
+# preset-disabled, which leaves speaker volumes locked at boot.
+# usbmuxd/libimobiledevice enable iPhone USB tethering (ipheth); Android
+# RNDIS tethering needs no extra packages.
 RUN dnf5 -y install \
         gamemode \
         zstd \
@@ -25,7 +26,8 @@ RUN dnf5 -y install \
         libimobiledevice-utils \
         speakersafetyd \
     && dnf5 clean all \
-    && rm -rf /var/log/* /var/cache/dnf
+    && rm -rf /var/log/* /var/cache/dnf \
+    && systemctl enable speakersafetyd
 
 # Steam/Gamescope/Proton/FEX are deferred until J313 boot and hardware
 # validation pass (see docs/J313.md).

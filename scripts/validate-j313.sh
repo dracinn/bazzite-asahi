@@ -119,6 +119,17 @@ else
     report FAIL audio "no sound cards"
 fi
 
+# speakersafetyd must be enabled+running — it unlocks speaker volumes and
+# protects J313 hardware. Cards may register without it but stay muted.
+if systemctl is-enabled speakersafetyd.service >/dev/null 2>&1 \
+   && systemctl is-active speakersafetyd.service >/dev/null 2>&1; then
+    report PASS speakersafetyd "enabled and active"
+elif systemctl is-active speakersafetyd.service >/dev/null 2>&1; then
+    report FAIL speakersafetyd "running but not enabled at boot"
+else
+    report FAIL speakersafetyd "not active (speaker volumes stay locked)"
+fi
+
 if grep -q 'capture' /proc/asound/pcm 2>/dev/null; then
     report PASS mic "capture pcm present"
 else
