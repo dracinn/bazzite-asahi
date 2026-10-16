@@ -30,5 +30,13 @@ RUN dnf5 -y install \
     && rm -rf /var/log/* /var/cache/dnf \
     && systemctl enable speakersafetyd
 
+# bootc updates never touch the ESP, so m1n1/boot.bin goes stale and can
+# eventually fail to boot a newer image. This oneshot regenerates it from
+# the running deployment each boot and writes only on change.
+COPY scripts/m1n1-bootbin-sync.sh /usr/libexec/m1n1-bootbin-sync
+COPY units/m1n1-bootbin-sync.service /usr/lib/systemd/system/m1n1-bootbin-sync.service
+RUN chmod 0755 /usr/libexec/m1n1-bootbin-sync \
+    && systemctl enable m1n1-bootbin-sync
+
 # Steam/Gamescope/Proton/FEX are deferred until J313 boot and hardware
 # validation pass (see docs/J313.md).

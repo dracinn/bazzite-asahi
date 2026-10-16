@@ -1,0 +1,13 @@
+[Unit]
+Description=Sync m1n1/boot.bin on the ESP from the current deployment
+# Runs once per boot; writes only when the regenerated bundle differs.
+ConditionPathExists=/boot/efi/m1n1/boot.bin
+RequiresMountsFor=/boot/efi
+After=boot-efi.mount
+
+[Service]
+Type=oneshot
+ExecStart=/usr/libexec/m1n1-bootbin-sync
+
+[Install]
+WantedBy=multi-user.target

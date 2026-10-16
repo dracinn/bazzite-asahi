@@ -84,8 +84,11 @@ issue tracker. Supersedes the phase layout in `ROADMAP.md` where they differ.
 - [ ] Optional: contribute our ref to Bootsahi's catalog for users who DO
       have Linux-side internet (their alpha is hardware-starved —
       issue #154/#160).
-- [ ] Adopt `asahi-bootbin-sync` (or equivalent) so boot bins sync from
-      image → ESP on update — closes the "update renders unbootable" gap.
+- [x] Boot-bin sync: `m1n1-bootbin-sync.service` (oneshot, every boot)
+      regenerates `m1n1/boot.bin` from the running deployment's m1n1 +
+      DTBs + gzipped U-Boot and writes only on change (keeps `.bak`).
+      Closes the "image update leaves stale boot.bin" gap — hardware
+      verification pending next update cycle.
 
 ## Phase 4 — Bazzite userspace (after first boot validated)
 
