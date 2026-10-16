@@ -48,23 +48,22 @@ issue tracker. Supersedes the phase layout in `ROADMAP.md` where they differ.
 - [ ] Re-pin check: the watch's manifest-drift check no longer applies —
       replace with a "new upstream kinoite tag" check or drop it.
 
-## Phase 2 — install path (hardware)
+## Phase 2 — install path (hardware) — DONE 2026-10-16
 
-- [ ] Rebuild the USB kit after the Phase-1 image lands (kit was wiped).
-- [ ] Path A (current): Asahi installer → Fedora Asahi Remix 44 KDE →
-      `bootc install to-existing-root` (documented in INSTALL-J313.md).
-      Upstream suggests `to-filesystem` is their intended variant — test
-      and reconcile which actually survives on real hardware.
-- [ ] Record results in `docs/J313.md` matrix via `validate-j313.sh`.
-- [ ] Known-flaky areas to exercise first (from watched issues):
-      suspend/resume (omacom/linux-aurora#123/#124 PMP/thunderbolt s2idle),
-      USB-C + external display (aurora-silicon/linux#275 DCP/tipd recovery),
-      display-after-poweroff (AsahiLinux/linux#582 drm crash latch),
-      SEP/Touch ID after reboot (aurora-silicon/linux#69),
-      macOS 27 bootability flag (AsahiLinux/asahi-fix27 — this machine).
-- [ ] Boot.bin lifecycle: verify `update-m1n1` runs correctly post-install;
-      document that image updates do NOT update m1n1/U-Boot, and test
-      rollback behavior after a failed boot.
+- [x] Installed via the direct installer payload (Phase 3's Path A) —
+      the bootc-conversion path was never needed. Asahi installer ran
+      from macOS, wrote the payload, first boot landed in Bazzite Asahi.
+- [x] Recorded in `docs/J313.md`: validator PASS=17 FAIL=0, all manual
+      items confirmed — camera, suspend/resume (s2idle), reboot/shutdown,
+      hold-power boot picker, update → reboot → rollback round-trip.
+- [x] Audio resolved: `speakersafetyd` was disabled in the base image
+      (upstream preset); now enabled in-image. Cards + audible output
+      confirmed. Known-flaky areas from watched issues did NOT reproduce
+      (suspend, shutdown, USB-C — though external display untested).
+- [x] Update lifecycle: `bootc update` delta pull (536 MB) → staged →
+      reboot into new deployment → `rpm-ostree rollback` confirmed.
+      Image updates never touch m1n1/U-Boot — boot.bin lifecycle still
+      needs `asahi-bootbin-sync` or equivalent (Phase 3).
 
 ## Phase 3 — installer payload (in progress)
 
@@ -76,10 +75,12 @@ issue tracker. Supersedes the phase layout in `ROADMAP.md` where they differ.
       with a **direct-install** layout matching the official Fedora Asahi
       os_list schema (EFI + Boot + Root/expand): the installer writes the
       real OS, first boot lands in Bazzite Asahi, zero Linux-side downloads.
-- [ ] Verify payload builds in CI (`payload` job in build-j313.yml).
-- [ ] Hardware-test the payload install on J313.
+- [x] Verify payload builds in CI (`payload` job in build-j313.yml).
+- [x] Hardware-test the payload install on J313 — proven end-to-end
+      2026-10-16 (partitioning, blessing, first boot all clean).
 - [ ] If proven, cut a release hosting the zip + installer_data.json so the
-      catalog URL is stable.
+      catalog URL is stable. Note: GitHub Releases caps assets at 2 GB;
+      our zip is ~3.4 GB — split the archive or keep the artifact flow.
 - [ ] Optional: contribute our ref to Bootsahi's catalog for users who DO
       have Linux-side internet (their alpha is hardware-starved —
       issue #154/#160).
