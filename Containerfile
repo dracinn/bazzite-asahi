@@ -25,6 +25,7 @@ RUN dnf5 -y install \
         usbmuxd \
         libimobiledevice-utils \
         speakersafetyd \
+        asahi-scripts \
     && dnf5 clean all \
     && rm -rf /var/log/* /var/cache/dnf \
     && systemctl enable speakersafetyd
