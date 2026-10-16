@@ -113,7 +113,9 @@ fi
 
 ## Audio / camera
 
-if [ -s /proc/asound/cards ] && grep -q '^\s*[0-9]' /proc/asound/cards; then
+# Note: /proc/asound/cards stats as 0 bytes (procfs) — grep it directly,
+# -s would always fail.
+if grep -q '^ *[0-9]' /proc/asound/cards 2>/dev/null; then
     report PASS audio "$(sed -n 's/^[ ]*[0-9] \[\([^]]*\)\].*/\1/p' /proc/asound/cards | head -1 | xargs)"
 else
     report FAIL audio "no sound cards"
