@@ -18,7 +18,8 @@ LABEL org.opencontainers.image.title="Bazzite Asahi" \
 # can be damaged); install AND enable it — the base image ships it
 # preset-disabled, which leaves speaker volumes locked at boot.
 # usbmuxd/libimobiledevice enable iPhone USB tethering (ipheth); Android
-# RNDIS tethering needs no extra packages.
+# RNDIS tethering needs no extra packages. android-tools + sshuttle back
+# phone-tether, the Tetrd replacement (Tetrd's Linux server is x86_64-only).
 RUN dnf5 -y install \
         gamemode \
         zstd \
@@ -26,6 +27,8 @@ RUN dnf5 -y install \
         libimobiledevice-utils \
         speakersafetyd \
         asahi-scripts \
+        android-tools \
+        sshuttle \
     && dnf5 clean all \
     && rm -rf /var/log/* /var/cache/dnf \
     && systemctl enable speakersafetyd
@@ -33,9 +36,10 @@ RUN dnf5 -y install \
 # bootc updates never touch the ESP, so m1n1/boot.bin goes stale and can
 # eventually fail to boot a newer image. This oneshot regenerates it from
 # the running deployment each boot and writes only on change.
+COPY scripts/phone-tether.sh /usr/bin/phone-tether
 COPY scripts/m1n1-bootbin-sync.sh /usr/libexec/m1n1-bootbin-sync
 COPY units/m1n1-bootbin-sync.service /usr/lib/systemd/system/m1n1-bootbin-sync.service
-RUN chmod 0755 /usr/libexec/m1n1-bootbin-sync \
+RUN chmod 0755 /usr/libexec/m1n1-bootbin-sync /usr/bin/phone-tether \
     && systemctl enable m1n1-bootbin-sync
 
 # Phase 4: Asahi gaming stack — hardware baseline passed 2026-10-16.
