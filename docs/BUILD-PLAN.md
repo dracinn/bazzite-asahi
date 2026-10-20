@@ -92,14 +92,19 @@ issue tracker. Supersedes the phase layout in `ROADMAP.md` where they differ.
       discovered via esp-check; first unit version gated on a mounted
       path that never existed).
 
-## Phase 4 — Bazzite userspace (after first boot validated)
+## Phase 4 — Bazzite userspace (in progress, started 2026-10-20)
 
+- [x] Gaming stack added to the image: `steam` (@asahi/steam COPR,
+      enabled via repos/asahi-steam.repo), `fex-emu`, `muvm`, `box64`,
+      `gamescope`, `xwayland-run`, `virglrenderer` (@asahi/mesa).
+      First steam launch downloads the client (~1-2 GB) — note for
+      metered connections.
+- [ ] Hardware-test: steam first launch via FEX+muvm, a native-aarch64
+      game through box64, gamescope session.
 - [ ] Reference: `xXJSONDeruloXx/bazzite` `asahi-build` branch (28-file
       draft, got Bazzite booting on M2 Max) — especially their fex/box64
       OOTB approach.
-- [ ] x86 gaming path: `AsahiLinux/muvm` + FEX (`fex-emu-rootfs-generator`),
-      watch `aurora-silicon/aurora-steam-native`.
-- [ ] Gamescope/Steam only after display+audio matrix passes.
+- [ ] Watch `aurora-silicon/aurora-steam-native` for Steam-native work.
 
 ## Phase 5 — upstream convergence
 
