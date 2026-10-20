@@ -38,5 +38,18 @@ COPY units/m1n1-bootbin-sync.service /usr/lib/systemd/system/m1n1-bootbin-sync.s
 RUN chmod 0755 /usr/libexec/m1n1-bootbin-sync \
     && systemctl enable m1n1-bootbin-sync
 
-# Steam/Gamescope/Proton/FEX are deferred until J313 boot and hardware
-# validation pass (see docs/J313.md).
+# Phase 4: Asahi gaming stack — hardware baseline passed 2026-10-16.
+# steam comes from the official @asahi/steam COPR (FEX + muvm x86 path);
+# everything else is Fedora proper or the already-enabled @asahi/mesa.
+# The steam package is only a launcher; the client downloads on first run.
+COPY repos/asahi-steam.repo /etc/yum.repos.d/asahi-steam.repo
+RUN dnf5 -y install \
+        fex-emu \
+        muvm \
+        box64 \
+        gamescope \
+        xwayland-run \
+        virglrenderer \
+        steam \
+    && dnf5 clean all \
+    && rm -rf /var/log/* /var/cache/dnf
