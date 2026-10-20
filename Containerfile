@@ -36,11 +36,13 @@ RUN dnf5 -y install \
 # bootc updates never touch the ESP, so m1n1/boot.bin goes stale and can
 # eventually fail to boot a newer image. This oneshot regenerates it from
 # the running deployment each boot and writes only on change.
-COPY scripts/phone-tether.sh /usr/bin/phone-tether
 COPY scripts/m1n1-bootbin-sync.sh /usr/libexec/m1n1-bootbin-sync
 COPY units/m1n1-bootbin-sync.service /usr/lib/systemd/system/m1n1-bootbin-sync.service
-RUN chmod 0755 /usr/libexec/m1n1-bootbin-sync /usr/bin/phone-tether \
+RUN chmod 0755 /usr/libexec/m1n1-bootbin-sync \
     && systemctl enable m1n1-bootbin-sync
+
+# phone-tether: Tetrd replacement (Android over ADB + Termux sshd + sshuttle).
+COPY --chmod=0755 scripts/phone-tether.sh /usr/bin/phone-tether
 
 # Phase 4: Asahi gaming stack — hardware baseline passed 2026-10-16.
 # steam comes from the official @asahi/steam COPR (FEX + muvm x86 path);
